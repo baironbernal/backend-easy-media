@@ -20,6 +20,7 @@ app.use(express.json());
 //Routes
 app.use('/api/users/', require('./routes/user'));
 app.use('/api/login/', require('./routes/auth'));
+app.use('/api/posts/', require('./routes/post'));
 
 app.listen(process.env.PORT, () => {
     console.log('server corriendo en el puerto: ' + process.env.PORT);

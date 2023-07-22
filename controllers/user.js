@@ -5,11 +5,19 @@ const { generateJWT } = require('../helpers/jwt');
 
 
 const getUsers = async(req, res) => {
+    const since = Number(req.query.since) || 0;
+    console.log(since);
 
-    const users = await User.find();
+    const [users, total] = await Promise.all([
+        User.find({}).skip(since).limit(5),
+        User.count()
+    ])
+
+
     res.json({
         ok: true,
-        users
+        users,
+        total
     })
 }
 
