@@ -1,16 +1,65 @@
 const { response } = require('express');
 
 const Post = require('../models/post');
-const { generateJWT } = require('../helpers/jwt');
-
 
 const getPosts = async(req, res) => {
+    const since = Number(req.query.since) || 0;
+    const [posts, total] = await Promise.all([
+        Post.find()
+        .sort('-date_at')
+        .skip(since)
+        .limit(3)
+        .populate('user', 'name'),
 
-    const posts = await Post.find().populate('user', 'name');
+        Post.count()
+
+    ])
+
+
     res.json({
         ok: true,
-        posts
+        posts,
+        total
     })
+}
+
+
+const getPostsById = async(req, res = response) => {
+    const uid = req.params.id;
+    const since = Number(req.query.since) || 0;
+
+    try {
+
+        const [posts, total] = await Promise.all([
+            Post.find({ user: uid })
+            .sort('-date_at')
+            .skip(since)
+            .limit(3),
+
+            Post.count(),
+
+        ])
+
+        if (!posts) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe posts para este usuario'
+            })
+        }
+
+
+        res.json({
+            ok: true,
+            posts,
+            total
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        })
+    }
 }
 
 const createPost = async(req, res = response) => {
@@ -49,4 +98,5 @@ const createPost = async(req, res = response) => {
 module.exports = {
     getPosts,
     createPost,
+    getPostsById
 }
